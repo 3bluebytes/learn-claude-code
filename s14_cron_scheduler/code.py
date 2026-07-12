@@ -593,72 +593,146 @@ def run_cancel_cron(job_id: str) -> str:
 # ── Tool Definitions ──
 
 TOOLS = [
-    {"name": "bash", "description": "Run a shell command.",
-     "input_schema": {"type": "object",
-                      "properties": {
-                          "command": {"type": "string"},
-                          "run_in_background": {"type": "boolean"}},
-                      "required": ["command"]}},
-    {"name": "read_file", "description": "Read file contents.",
-     "input_schema": {"type": "object",
-                      "properties": {"path": {"type": "string"},
-                                     "limit": {"type": "integer"}},
-                      "required": ["path"]}},
-    {"name": "write_file", "description": "Write content to a file.",
-     "input_schema": {"type": "object",
-                      "properties": {"path": {"type": "string"},
-                                     "content": {"type": "string"}},
-                      "required": ["path", "content"]}},
-    {"name": "create_task",
-     "description": "Create a new task with optional blockedBy dependencies.",
-     "input_schema": {"type": "object",
-                      "properties": {
-                          "subject": {"type": "string"},
-                          "description": {"type": "string"},
-                          "blockedBy": {"type": "array",
-                                        "items": {"type": "string"}}},
-                      "required": ["subject"]}},
-    {"name": "list_tasks",
-     "description": "List all tasks with status, owner, and dependencies.",
-     "input_schema": {"type": "object", "properties": {},
-                      "required": []}},
-    {"name": "get_task",
-     "description": "Get full details of a specific task by ID.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "claim_task",
-     "description": "Claim a pending task. Sets owner, changes status to in_progress.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "complete_task",
-     "description": "Complete an in-progress task. Reports unblocked downstream tasks.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "schedule_cron",
-     "description": "Schedule a cron job. cron is 5-field: min hour dom month dow.",
-     "input_schema": {"type": "object",
-                      "properties": {
-                          "cron": {"type": "string",
-                                   "description": "5-field cron expression"},
-                          "prompt": {"type": "string",
-                                     "description": "Message to inject when fired"},
-                          "recurring": {"type": "boolean",
-                                        "description": "True=recurring, False=one-shot"},
-                          "durable": {"type": "boolean",
-                                      "description": "True=persist to disk"}},
-                      "required": ["cron", "prompt"]}},
-    {"name": "list_crons",
-     "description": "List all registered cron jobs.",
-     "input_schema": {"type": "object", "properties": {},
-                      "required": []}},
-    {"name": "cancel_cron",
-     "description": "Cancel a cron job by ID.",
-     "input_schema": {"type": "object",
-                      "properties": {"job_id": {"type": "string"}},
-                      "required": ["job_id"]}},
+    {
+        "name": "bash",
+        "description": "Run a shell command.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string"},
+                "run_in_background": {"type": "boolean"},
+            },
+            "required": ["command"],
+        },
+    },
+    {
+        "name": "read_file",
+        "description": "Read file contents.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "limit": {"type": "integer"},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "name": "write_file",
+        "description": "Write content to a file.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "content": {"type": "string"},
+            },
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "name": "create_task",
+        "description": "Create a new task with optional blockedBy dependencies.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "subject": {"type": "string"},
+                "description": {"type": "string"},
+                "blockedBy": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+            },
+            "required": ["subject"],
+        },
+    },
+    {
+        "name": "list_tasks",
+        "description": "List all tasks with status, owner, and dependencies.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "get_task",
+        "description": "Get full details of a specific task by ID.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "claim_task",
+        "description": "Claim a pending task. Sets owner, changes status to in_progress.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "complete_task",
+        "description": "Complete an in-progress task. Reports unblocked downstream tasks.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "schedule_cron",
+        "description": "Schedule a cron job. cron is 5-field: min hour dom month dow.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "cron": {
+                    "type": "string",
+                    "description": "5-field cron expression",
+                },
+                "prompt": {
+                    "type": "string",
+                    "description": "Message to inject when fired",
+                },
+                "recurring": {
+                    "type": "boolean",
+                    "description": "True=recurring, False=one-shot",
+                },
+                "durable": {
+                    "type": "boolean",
+                    "description": "True=persist to disk",
+                },
+            },
+            "required": ["cron", "prompt"],
+        },
+    },
+    {
+        "name": "list_crons",
+        "description": "List all registered cron jobs.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "cancel_cron",
+        "description": "Cancel a cron job by ID.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "job_id": {"type": "string"},
+            },
+            "required": ["job_id"],
+        },
+    },
 ]
 
 

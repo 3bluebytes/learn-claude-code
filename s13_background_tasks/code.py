@@ -253,56 +253,110 @@ def run_complete_task(task_id: str) -> str:
 
 
 TOOLS = [
-    {"name": "bash", "description": "Run a shell command.",
-     "input_schema": {"type": "object",
-                      "properties": {
-                          "command": {"type": "string"},
-                          "run_in_background": {"type": "boolean"}},
-                      "required": ["command"]}},
-    {"name": "read_file", "description": "Read file contents.",
-     "input_schema": {"type": "object",
-                      "properties": {"path": {"type": "string"},
-                                     "limit": {"type": "integer"}},
-                      "required": ["path"]}},
-    {"name": "write_file", "description": "Write content to a file.",
-     "input_schema": {"type": "object",
-                      "properties": {"path": {"type": "string"},
-                                     "content": {"type": "string"}},
-                      "required": ["path", "content"]}},
-    {"name": "create_task",
-     "description": "Create a new task with optional blockedBy dependencies.",
-     "input_schema": {"type": "object",
-                      "properties": {
-                          "subject": {"type": "string"},
-                          "description": {"type": "string"},
-                          "blockedBy": {"type": "array",
-                                        "items": {"type": "string"}}},
-                      "required": ["subject"]}},
-    {"name": "list_tasks",
-     "description": "List all tasks with status, owner, and dependencies.",
-     "input_schema": {"type": "object", "properties": {},
-                      "required": []}},
-    {"name": "get_task",
-     "description": "Get full details of a specific task by ID.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "claim_task",
-     "description": "Claim a pending task. Sets owner, changes status to in_progress.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "complete_task",
-     "description": "Complete an in-progress task. Reports unblocked downstream tasks.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
+    {
+        "name": "bash",
+        "description": "Run a shell command.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string"},
+                "run_in_background": {"type": "boolean"},
+            },
+            "required": ["command"],
+        },
+    },
+    {
+        "name": "read_file",
+        "description": "Read file contents.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "limit": {"type": "integer"},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "name": "write_file",
+        "description": "Write content to a file.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "content": {"type": "string"},
+            },
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "name": "create_task",
+        "description": "Create a new task with optional blockedBy dependencies.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "subject": {"type": "string"},
+                "description": {"type": "string"},
+                "blockedBy": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+            },
+            "required": ["subject"],
+        },
+    },
+    {
+        "name": "list_tasks",
+        "description": "List all tasks with status, owner, and dependencies.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "get_task",
+        "description": "Get full details of a specific task by ID.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "claim_task",
+        "description": "Claim a pending task. Sets owner, changes status to in_progress.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "complete_task",
+        "description": "Complete an in-progress task. Reports unblocked downstream tasks.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
 ]
 
 TOOL_HANDLERS = {
-    "bash": run_bash, "read_file": run_read, "write_file": run_write,
-    "create_task": run_create_task, "list_tasks": run_list_tasks,
-    "get_task": run_get_task, "claim_task": run_claim_task,
+    "bash": run_bash,
+    "read_file": run_read,
+    "write_file": run_write,
+    "create_task": run_create_task,
+    "list_tasks": run_list_tasks,
+    "get_task": run_get_task,
+    "claim_task": run_claim_task,
     "complete_task": run_complete_task,
 }
 

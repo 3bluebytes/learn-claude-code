@@ -219,9 +219,14 @@ MAILBOX_DIR.mkdir(exist_ok=True)
 class MessageBus:
     def send(self, from_agent: str, to_agent: str, content: str,
              msg_type: str = "message", metadata: dict = None):
-        msg = {"from": from_agent, "to": to_agent,
-               "content": content, "type": msg_type,
-               "ts": time.time(), "metadata": metadata or {}}
+        msg = {
+            "from": from_agent,
+            "to": to_agent,
+            "content": content,
+            "type": msg_type,
+            "ts": time.time(),
+            "metadata": metadata or {},
+        }
         inbox = MAILBOX_DIR / f"{to_agent}.jsonl"
         with open(inbox, "a") as f:
             f.write(json.dumps(msg) + "\n")
@@ -383,45 +388,95 @@ def spawn_teammate_thread(name: str, role: str, prompt: str) -> str:
     def run():
         messages = [{"role": "user", "content": prompt}]
         sub_tools = [
-            {"name": "bash", "description": "Run a shell command.",
-             "input_schema": {"type": "object",
-                              "properties": {"command": {"type": "string"}},
-                              "required": ["command"]}},
-            {"name": "read_file", "description": "Read file.",
-             "input_schema": {"type": "object",
-                              "properties": {"path": {"type": "string"}},
-                              "required": ["path"]}},
-            {"name": "write_file", "description": "Write file.",
-             "input_schema": {"type": "object",
-                              "properties": {"path": {"type": "string"},
-                                             "content": {"type": "string"}},
-                              "required": ["path", "content"]}},
-            {"name": "send_message",
-             "description": "Send message to another agent.",
-             "input_schema": {"type": "object",
-                              "properties": {"to": {"type": "string"},
-                                             "content": {"type": "string"}},
-                              "required": ["to", "content"]}},
-            {"name": "submit_plan",
-             "description": "Submit a plan for Lead approval.",
-             "input_schema": {"type": "object",
-                              "properties": {"plan": {"type": "string"}},
-                              "required": ["plan"]}},
+            {
+                "name": "bash",
+                "description": "Run a shell command.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "command": {"type": "string"},
+                    },
+                    "required": ["command"],
+                },
+            },
+            {
+                "name": "read_file",
+                "description": "Read file.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string"},
+                    },
+                    "required": ["path"],
+                },
+            },
+            {
+                "name": "write_file",
+                "description": "Write file.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {"type": "string"},
+                        "content": {"type": "string"},
+                    },
+                    "required": ["path", "content"],
+                },
+            },
+            {
+                "name": "send_message",
+                "description": "Send message to another agent.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "to": {"type": "string"},
+                        "content": {"type": "string"},
+                    },
+                    "required": ["to", "content"],
+                },
+            },
+            {
+                "name": "submit_plan",
+                "description": "Submit a plan for Lead approval.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "plan": {"type": "string"},
+                    },
+                    "required": ["plan"],
+                },
+            },
             # s17 new: teammates can list, claim, and complete tasks
-            {"name": "list_tasks",
-             "description": "List all tasks on the board.",
-             "input_schema": {"type": "object", "properties": {},
-                              "required": []}},
-            {"name": "claim_task",
-             "description": "Claim a pending task.",
-             "input_schema": {"type": "object",
-                              "properties": {"task_id": {"type": "string"}},
-                              "required": ["task_id"]}},
-            {"name": "complete_task",
-             "description": "Mark an in-progress task as completed.",
-             "input_schema": {"type": "object",
-                              "properties": {"task_id": {"type": "string"}},
-                              "required": ["task_id"]}},
+            {
+                "name": "list_tasks",
+                "description": "List all tasks on the board.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            },
+            {
+                "name": "claim_task",
+                "description": "Claim a pending task.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "task_id": {"type": "string"},
+                    },
+                    "required": ["task_id"],
+                },
+            },
+            {
+                "name": "complete_task",
+                "description": "Mark an in-progress task as completed.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "task_id": {"type": "string"},
+                    },
+                    "required": ["task_id"],
+                },
+            },
         ]
 
         def _run_list_tasks():
@@ -439,7 +494,9 @@ def spawn_teammate_thread(name: str, role: str, prompt: str) -> str:
             return complete_task(task_id)
 
         sub_handlers = {
-            "bash": run_bash, "read_file": run_read, "write_file": run_write,
+            "bash": run_bash,
+            "read_file": run_read,
+            "write_file": run_write,
             "send_message": lambda to, content: (BUS.send(name, to, content),
                                                   "Sent")[1],
             "submit_plan": lambda plan: _teammate_submit_plan(name, plan),
@@ -646,92 +703,186 @@ def run_check_inbox() -> str:
 # ── Tool Definitions ──
 
 TOOLS = [
-    {"name": "bash", "description": "Run a shell command.",
-     "input_schema": {"type": "object",
-                      "properties": {"command": {"type": "string"}},
-                      "required": ["command"]}},
-    {"name": "read_file", "description": "Read file contents.",
-     "input_schema": {"type": "object",
-                      "properties": {"path": {"type": "string"},
-                                     "limit": {"type": "integer"}},
-                      "required": ["path"]}},
-    {"name": "write_file", "description": "Write content to a file.",
-     "input_schema": {"type": "object",
-                      "properties": {"path": {"type": "string"},
-                                     "content": {"type": "string"}},
-                      "required": ["path", "content"]}},
-    {"name": "create_task",
-     "description": "Create a task.",
-     "input_schema": {"type": "object",
-                      "properties": {"subject": {"type": "string"},
-                                     "description": {"type": "string"},
-                                     "blockedBy": {"type": "array",
-                                                   "items": {"type": "string"}}},
-                      "required": ["subject"]}},
-    {"name": "list_tasks",
-     "description": "List all tasks.",
-     "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "get_task",
-     "description": "Get full details of a specific task.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "claim_task",
-     "description": "Claim a pending task.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "complete_task",
-     "description": "Complete an in-progress task.",
-     "input_schema": {"type": "object",
-                      "properties": {"task_id": {"type": "string"}},
-                      "required": ["task_id"]}},
-    {"name": "spawn_teammate",
-     "description": "Spawn an autonomous teammate agent.",
-     "input_schema": {"type": "object",
-                      "properties": {"name": {"type": "string"},
-                                     "role": {"type": "string"},
-                                     "prompt": {"type": "string"}},
-                      "required": ["name", "role", "prompt"]}},
-    {"name": "send_message",
-     "description": "Send message to a teammate.",
-     "input_schema": {"type": "object",
-                      "properties": {"to": {"type": "string"},
-                                     "content": {"type": "string"}},
-                      "required": ["to", "content"]}},
-    {"name": "check_inbox",
-     "description": "Check inbox for messages and protocol responses.",
-     "input_schema": {"type": "object", "properties": {}, "required": []}},
-    {"name": "request_shutdown",
-     "description": "Request a teammate to shut down gracefully.",
-     "input_schema": {"type": "object",
-                      "properties": {"teammate": {"type": "string"}},
-                      "required": ["teammate"]}},
-    {"name": "request_plan",
-     "description": "Ask a teammate to submit a plan for review.",
-     "input_schema": {"type": "object",
-                      "properties": {"teammate": {"type": "string"},
-                                     "task": {"type": "string"}},
-                      "required": ["teammate", "task"]}},
-    {"name": "review_plan",
-     "description": "Approve or reject a submitted plan.",
-     "input_schema": {"type": "object",
-                      "properties": {
-                          "request_id": {"type": "string"},
-                          "approve": {"type": "boolean"},
-                          "feedback": {"type": "string"}},
-                      "required": ["request_id", "approve"]}},
+    {
+        "name": "bash",
+        "description": "Run a shell command.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string"},
+            },
+            "required": ["command"],
+        },
+    },
+    {
+        "name": "read_file",
+        "description": "Read file contents.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "limit": {"type": "integer"},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "name": "write_file",
+        "description": "Write content to a file.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "content": {"type": "string"},
+            },
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "name": "create_task",
+        "description": "Create a task.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "subject": {"type": "string"},
+                "description": {"type": "string"},
+                "blockedBy": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+            },
+            "required": ["subject"],
+        },
+    },
+    {
+        "name": "list_tasks",
+        "description": "List all tasks.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "get_task",
+        "description": "Get full details of a specific task.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "claim_task",
+        "description": "Claim a pending task.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "complete_task",
+        "description": "Complete an in-progress task.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "task_id": {"type": "string"},
+            },
+            "required": ["task_id"],
+        },
+    },
+    {
+        "name": "spawn_teammate",
+        "description": "Spawn an autonomous teammate agent.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "role": {"type": "string"},
+                "prompt": {"type": "string"},
+            },
+            "required": ["name", "role", "prompt"],
+        },
+    },
+    {
+        "name": "send_message",
+        "description": "Send message to a teammate.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "string"},
+                "content": {"type": "string"},
+            },
+            "required": ["to", "content"],
+        },
+    },
+    {
+        "name": "check_inbox",
+        "description": "Check inbox for messages and protocol responses.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "request_shutdown",
+        "description": "Request a teammate to shut down gracefully.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "teammate": {"type": "string"},
+            },
+            "required": ["teammate"],
+        },
+    },
+    {
+        "name": "request_plan",
+        "description": "Ask a teammate to submit a plan for review.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "teammate": {"type": "string"},
+                "task": {"type": "string"},
+            },
+            "required": ["teammate", "task"],
+        },
+    },
+    {
+        "name": "review_plan",
+        "description": "Approve or reject a submitted plan.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "request_id": {"type": "string"},
+                "approve": {"type": "boolean"},
+                "feedback": {"type": "string"},
+            },
+            "required": ["request_id", "approve"],
+        },
+    },
 ]
 
 TOOL_HANDLERS = {
-    "bash": run_bash, "read_file": run_read, "write_file": run_write,
-    "create_task": run_create_task, "list_tasks": run_list_tasks,
+    "bash": run_bash,
+    "read_file": run_read,
+    "write_file": run_write,
+    "create_task": run_create_task,
+    "list_tasks": run_list_tasks,
     "get_task": run_get_task,
-    "claim_task": run_claim_task, "complete_task": run_complete_task,
+    "claim_task": run_claim_task,
+    "complete_task": run_complete_task,
     "spawn_teammate": run_spawn_teammate,
-    "send_message": run_send_message, "check_inbox": run_check_inbox,
+    "send_message": run_send_message,
+    "check_inbox": run_check_inbox,
     "request_shutdown": run_request_shutdown,
-    "request_plan": run_request_plan, "review_plan": run_review_plan,
+    "request_plan": run_request_plan,
+    "review_plan": run_review_plan,
 }
 
 
